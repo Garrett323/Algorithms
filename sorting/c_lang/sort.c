@@ -47,7 +47,12 @@ int main(void) {
   return 0;
 }
 
-
+/* ATTENTION!
+*  This implementation of merge sort is highly unsafe!
+*  Splitting an array like this can result in segmentation faults when not handled properly!
+*  I choose to do it like this because it is an interesting way to implement this algorithm 
+*  and its quite fast!
+*/
 void merge_sort(int length, int array[length]) {
   if (length <= 1) return;
   merge_sort(length/2, array);
