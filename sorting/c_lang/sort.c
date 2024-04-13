@@ -7,6 +7,7 @@
 
 void merge_sort(int length, int array[length]);
 void merge(int n1, int array1[n1], int n2, int array2[n2]);
+void quick_sort(int n, int array[n]);
 void yeet(int n, int* arr) {
   printf("{");
   for (int i = 0; i < n - 1; i++) {
@@ -23,27 +24,38 @@ int* make_input(int len) {
   return arr;
 }
 
-void test(void (*algorithm)(int, int*)) {
+void seperate() {
+  for (int i=0; i<80; i++) {
+    printf("*");
+  }
+  printf("\n\n");
+}
+
+void test(void (*algorithm)(int, int*), int len, int show) {
+  seperate();
   struct timeval start, stop;
-  int len = 20000;//rand() % 15 + 1;
   int *arr = make_input(len);
   printf("unsorted:\n");
-  yeet(len, arr);
+  if (show) yeet(len, arr);
   gettimeofday(&start, NULL);
   algorithm(len, arr);
   gettimeofday(&stop, NULL);
   printf("sorted:\n");
-  yeet(len, arr);
+  if (show) yeet(len, arr);
   free(arr);
   printf("Sorting took %lu us.\n", stop.tv_usec - start.tv_usec);
+  seperate();
 }
 
 
 int main(void) {
+  int n = 300;
   printf("Initializing...\n");
   srand(time(NULL));
   printf("Testing Merge Sort:\n");
-  test(merge_sort);
+  test(merge_sort, n, 1);
+  printf("Testing Quick Sort:\n");
+  test(quick_sort, n, 1);
   return 0;
 }
 
@@ -75,4 +87,31 @@ void merge(int n1, int array1[n1], int n2, int array2[n2]) {
   for (int i = 0; i < n; i++) {
     array1[i] = sorted[i];
   }
+}
+
+void swap(int i, int j, int* array) {
+  int temp = array[i];
+  array[i] = array[j];
+  array[j] = temp;
+}
+
+void quick_sort(int n, int array[n]) {
+  if (n <= 1) {
+    return;
+  }
+  int pivot = array[0];
+  int lesser = 1, equal = 0;
+  for (int i=1; i<n; i++) {
+    if (array[i] < pivot) {
+      swap(i, lesser++, array);
+    } 
+    else if (array[i] == pivot) {
+      equal++;
+    }
+  }
+  int l = lesser - 1;
+  int r = n - lesser - equal;
+  swap(0, lesser - 1, array);
+  quick_sort(l, array);
+  quick_sort(r, array + lesser + equal);
 }
