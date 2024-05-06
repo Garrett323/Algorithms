@@ -100,15 +100,22 @@ void Snake::move(Direction d) {
 }
 
 bool Snake::check_game_over() {
-  std::map<std::string, bool> seen;
-  for (auto p : this->body) {
-    if (p.x < 0 || p.x > (WIDTH - XMARGIN) / SNAKESIZE - 1 || p.y < 0 ||
-        p.y > (HEIGHT - YMARGIN) / SNAKESIZE - 1)
+  auto &head = this->body[0];
+  if (head.x < 0 || head.x > (WIDTH - XMARGIN) / SNAKESIZE - 1 || head.y < 0 ||
+      head.y > (HEIGHT - YMARGIN) / SNAKESIZE - 1) {
+    std::cout << "Out of bounds!\n";
+    return true;
+  }
+  for (auto it = this->body.begin() + 1; it < this->body.end(); it++) {
+    if (*it == head) {
+      std::cout << "Collision!\n";
       return true;
-    auto key = std::to_string(p.x) + std::to_string(p.y);
-    if (seen.contains(key))
-      return true;
-    seen[key] = true;
+    }
+  }
+  if (((WIDTH - 5) / SNAKESIZE) * ((HEIGHT - 5) / SNAKESIZE) ==
+      this->body.size()) {
+    std::cout << "You won!\n";
+    return true;
   }
   return false;
 }
@@ -124,8 +131,8 @@ Food::Food() {
     srand(time(NULL));
     init = 1;
   }
-  pos = Point(rand() % (WIDTH - XMARGIN) / SNAKESIZE,
-              rand() % ((HEIGHT - YMARGIN) / SNAKESIZE));
+  pos = Point(rand() % ((WIDTH - XMARGIN) / SNAKESIZE - 1),
+              rand() % ((HEIGHT - YMARGIN) / SNAKESIZE) - 1);
 }
 
 void Food::render(SDL_Renderer *renderer) {
@@ -137,9 +144,20 @@ void Food::render(SDL_Renderer *renderer) {
   SDL_RenderFillRect(renderer, &rect);
 }
 
-void Food::new_pos() {
-  this->pos = Point(rand() % (WIDTH - XMARGIN) / SNAKESIZE,
-                    rand() % ((HEIGHT - YMARGIN) / SNAKESIZE));
+void Food::new_pos(std::shared_ptr<Snake> snake) {
+  Point candidate;
+  bool collision;
+  do {
+    candidate = Point(rand() % ((WIDTH - XMARGIN) / SNAKESIZE - 1),
+                      rand() % ((HEIGHT - YMARGIN) / SNAKESIZE - 1));
+    collision = false;
+    for (auto &part : snake->body) {
+      if (part == candidate) {
+        collision = true;
+      }
+    }
+  } while (collision);
+  this->pos = candidate;
 }
 
 int draw(GameState &game) {
@@ -187,7 +205,7 @@ int draw(GameState &game) {
     }
     if (snake->eats(food)) {
       game.score++;
-      food->new_pos();
+      food->new_pos(snake);
     }
     update_agent();
 
@@ -195,7 +213,7 @@ int draw(GameState &game) {
     food->render(renderer);
 
     SDL_RenderPresent(renderer);
-    SDL_Delay(10);
+    SDL_Delay(1);
   }
   return 0;
 }

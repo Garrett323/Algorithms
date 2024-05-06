@@ -12,12 +12,14 @@
 namespace snake {
 enum Direction { Up, Down, Left, Right };
 
+class Snake;
+
 class Food {
 public:
   Food(void);
   Point pos;
   void render(SDL_Renderer *);
-  void new_pos(void);
+  void new_pos(std::shared_ptr<Snake>);
 };
 
 class Snake {
