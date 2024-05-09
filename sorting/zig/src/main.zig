@@ -60,8 +60,11 @@ pub fn merge(left: []u8, right: []u8) void {
 }
 
 test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
+    var unsorted = [_]u8{ 5, 3, 29, 17, 0 };
+    const sorted = [_]u8{ 0, 3, 5, 17, 29 };
+    merge_sort(&unsorted);
+    for (0..sorted.len) |i| {
+        std.debug.assert(sorted[i] == unsorted[i]);
+    }
+    std.debug.print("MergeSort successfully tested on an array of length 5!\n", .{});
 }
